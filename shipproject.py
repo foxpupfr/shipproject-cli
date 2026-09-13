@@ -1,9 +1,6 @@
 # Please read the commends carefully to understand the program 
 
 #imports 
-from re import U, escape
-
-
 try: # Tries to import all the modules needed 
     from datetime import datetime #will be mainly used for logging
     import mysql.connector as s #will be used for everything around
@@ -21,7 +18,7 @@ except Exception as err:
 
 # function block for first run of program (fully hardcoded block)
  #most values here are hardcoded as to show examples and as such 
-def first_run():
+def first_run(ui_element = " "):
     log("#### program shipproject.py was started ####",escape_sequences="\n\n\n\n\n")
     def run_querie(*command):   #for error checking and handling also logs into the log.txt if the table exits 
         try: #here we check for existence of database with fact if error arises or not 
@@ -33,14 +30,34 @@ def first_run():
             log("Table "+command[1]+" already exits moving on...")
             return False
 
+    while True:
+        credentials_is_okay = False
+        try:
+            with open("shipproject_intialized.txt","r") as f:
+                data = f.read()
+                data = data.split(",")
+                host_name,user_name,password_of_user = data
+                f.close()
+                credentials_is_okay = True
+        except Exception:
+            box("shipproject_intialized.txt file was not found !\n \nPlease answer the following questions carefully to setup shipproject-cli !!!",escape_sequences = ui_element, error_box = True)
+            with open("shipproject_intialized.txt","w") as f:  
+                host_name = input("\n" + ui_element + "Please enter host name your database server is on : ")
+                user_name = input(ui_element + "Please enter the username for the database : ")
+                password_of_user = input(ui_element + "Please enter the password for the database : ")
+                f.write(host_name + "," + user_name + "," + password_of_user)
+                f.close()
+        if credentials_is_okay == True:
+            break
+
     #con0 was oppened to intiated the check for existence of database and create it if required
-    con0 = s.connect(host="localhost", user="theblackfox", password="theblackfox90")
+    con0 = s.connect(host = host_name, user = user_name, password = password_of_user)
     cur0 = con0.cursor()
     if con0.is_connected() == True:
         log("connection 0 was connected")
     try:
         cur0.execute("create database shipproject")
-        print("\n\nDatabase shipproject and connected tables were not found creating them please wait...")
+        print("\n\n" + ui_element + "Database shipproject and connected tables were not found creating them please wait...")
         database_flag=0    
         log("Database shipproject was not found so it was created using connection0")
         time.sleep(1.5)  # some timing for looks 
@@ -50,7 +67,7 @@ def first_run():
     con0.close()        #con0 was closed here 
     log("connection 0 was closed")
     global con1      #con1 is being opened here for all other interactions in this program with mysql
-    con1 = s.connect(host="localhost",user="theblackfox",password="theblackfox90",database="shipproject",)
+    con1 = s.connect(host = host_name, user = user_name, password = password_of_user,database="shipproject",)
     if con1.is_connected() == True:  
         log("connection 1 was connected")
     global cur1   # cur1 is being made into global scope for future use 
@@ -62,11 +79,11 @@ def first_run():
     run_querie("create table register_list(user_id int primary key,email_address varchar(100) not null unique,password varchar(225) not null, first_name varchar(50) not null,last_name varchar(50) not null,age int not null,phonenumber bigint unique not null,adhar_id bigint unique not null,nationality varchar(50) not null,tc char(1) not null )","register_list")
          
     #creates staff_register_table
-    if run_querie("create table staff_register_list(staff_id int primary key,email_address varchar(100) not null unique,password varchar(225) not null, first_name varchar(50) not null,last_name varchar(50) not null,age int not null,phonenumber bigint unique not null,adhar_id bigint unique not null,nationality varchar(50) not null,tc char(1) not null ,is_admin char(1),is_owner char(1))","staff_register_list"):
+    if run_querie("create table staff_register_list(staff_id int primary key,email_address varchar(100) not null unique,password varchar(225) not null, first_name varchar(50) not null,last_name varchar(50) not null,age int not null,phonenumber bigint unique not null,adhar_id bigint unique not null,nationality varchar(50) not null,tc char(1) not null ,is_admin char(1) not null,is_owner char(1) not null)","staff_register_list"):
         #adds admin to staff tables so admin can add the other staffs 
         cur1.execute("insert into staff_register_list(staff_id,email_address,password,first_name,last_name,age,phonenumber,adhar_id,nationality,tc,is_admin,is_owner)values(1,'ownerforshipproject@gmail.com','owner','owner for','shipproject',18,9090190901,0010,'India','y','y','y')")
-        cur1.execute("insert into staff_register_list(staff_id,email_address,password,first_name,last_name,age,phonenumber,adhar_id,nationality,tc,is_admin)values(2,'adminforshipproject@gmail.com','admin','admin for','shipproject',18,9090190991,00100,'India','y','y')")
-        cur1.execute("insert into staff_register_list(staff_id,email_address,password,first_name,last_name,age,phonenumber,adhar_id,nationality,tc)values(3,'staffforshipproject@gmail.com','staff','staff for','shipproject',18,9090190999,001000,'India','y')")
+        cur1.execute("insert into staff_register_list(staff_id,email_address,password,first_name,last_name,age,phonenumber,adhar_id,nationality,tc,is_admin,is_owner)values(2,'adminforshipproject@gmail.com','admin','admin for','shipproject',18,9090190991,00100,'India','y','y','n')")
+        cur1.execute("insert into staff_register_list(staff_id,email_address,password,first_name,last_name,age,phonenumber,adhar_id,nationality,tc,is_admin,is_owner)values(3,'staffforshipproject@gmail.com','staff','staff for','shipproject',18,9090190999,001000,'India','y','n','n')")
         con1.commit()
         log("all basic staff entries were added to staff register list")
 
@@ -82,14 +99,14 @@ def first_run():
         # staff's password : staff
 
     #creates login checklist table
-    run_querie("create table login_checklist(user_id int primary key,email_adress varchar(100) not null unique,phonenumber bigint not null,password varchar(225) not null)","login_checklist")
+    run_querie("create table login_checklist(user_id int primary key,email_address varchar(100) not null unique,phonenumber bigint not null,password varchar(225) not null)","login_checklist")
 
     #creates staff checklist table 
-    if run_querie("create table staff_checklist(staff_id int primary key,email_adress varchar(100) not null unique,phonenumber bigint not null,password varchar(225) not null,is_admin char(1),is_owner char(1))","staff_checklist"):
+    if run_querie("create table staff_checklist(staff_id int primary key,email_address varchar(100) not null unique,phonenumber bigint not null,password varchar(225) not null,is_admin char(1),is_owner char(1))","staff_checklist"):
         #adds admin to staff tables so admin can add the other staffs
-        cur1.execute("insert into staff_checklist(staff_id,email_adress,phonenumber,password,is_admin,is_owner)values(1,'ownerforshipproject@gmail.com',9090190991,'owner','y','y')")
-        cur1.execute("insert into staff_checklist(staff_id,email_adress,phonenumber,password,is_admin)values(2,'adminforshipproject@gmail.com',9090190901,'admin','y')")
-        cur1.execute("insert into staff_checklist(staff_id,email_adress,phonenumber,password)values(3,'staffforshipproject@gmail.com',9090190999,'staff')")
+        cur1.execute("insert into staff_checklist(staff_id,email_address,phonenumber,password,is_admin,is_owner)values(1,'ownerforshipproject@gmail.com',9090190991,'owner','y','y')")
+        cur1.execute("insert into staff_checklist(staff_id,email_address,phonenumber,password,is_admin,is_owner)values(2,'adminforshipproject@gmail.com',9090190901,'admin','y','n')")
+        cur1.execute("insert into staff_checklist(staff_id,email_address,phonenumber,password,is_admin,is_owner)values(3,'staffforshipproject@gmail.com',9090190999,'staff','n','n')")
         con1.commit()
         log("all basic staff entries were added to staff login checklist")
         
@@ -117,98 +134,74 @@ def first_run():
             log("all basic values were inserted into "+table_to_create)
 
     if database_flag==0: #this is database flag from con0 side which shows the confirmation (check con0 for reference)
-        print("\nDone !")
+        print("\n" + ui_element + "Done !")
         time.sleep(1) # some timing for looks 
         print("\n"*100) #prints 100 newlines in intention to clear terminal
 #block end
 
 
 # fuction block for user regiasteration (part 1)
-def user_registeration():
+def user_registeration(ui_element):
     cur1.execute("select max(user_id) from register_list")  #selects the biggest user od or the last registered user id from table 
-    c = cur1.fetchall() # just stores the alst regisered user id 
-    if c[0][0]==None:
+    data = cur1.fetchall() # just stores the last regisered user id 
+    if data[0][0] == None:
         user_id = 0 # if no user id was found meaning the database was just created it sets default to 0
     else:
-        user_id = c[0][0] + 1
+        user_id = data[0][0] + 1
     data_list_to_collect = ["email_address","password","first name","last name","age","phonenumber","adhar_id","nationality","tc"]
-    values_1 = data_catching(data_list_to_collect)  #this function will catch all the data here
+    print()
+    values_1 = data_catching(data_list_to_collect,ui_element)  #this function will catch all the data here
     values_1.insert(0,user_id)
     values_2 = (values_1[0],values_1[1],values_1[6],values_1[2])
 
     try:
         cur1.execute("insert into register_list(user_id,email_address,password,first_name,last_name,age,phonenumber,adhar_id,nationality,tc)values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",values_1)
-        cur1.execute("insert into login_checklist(user_id,email_adress,phonenumber,password)values(%s,%s,%s,%s)",values_2)
-        print("\n\tsuccesfully registered !\n")
-        print("\n\tyour user id is :",user_id)
-        print("\tplease remember your user_id and password")
-        log("a user was registered !")
+        cur1.execute("insert into login_checklist(user_id,email_address,phonenumber,password)values(%s,%s,%s,%s)",values_2)
+        box("!!! succesfully registered !!!\n \nPlease remember your User ID and password !\nYour User is : " + str(user_id) +"\nYour password is : " + values_2[3],escape_sequences = ui_element, error_box = True )
+        log("a user was registered with user id : " + str(user_id))
+        con1.commit()
     except s.errors.IntegrityError:
-        print("\n\n\t#### Error : Please enter your own email, phonenumber, adhar ID and check for its correctness ####")
-        log("user entred wrong email,phonenumber etc")
-    con1.commit()
+        box("Registration failed !\nPlease enter your own email, phonenumber, adhar ID and check for its correctness",escape_sequences = ui_element, warning_box = True)
+        log("registration failed, user entred wrong email,phonenumber etc")
 #block end
 
 # fuction block for staff registeration1
-def staff_registeration1():
-    email_address = input("\n\t\t\b\bPlease enter you email : ")
-    print("\n\t\t\b\b### please remember your password ###\n".upper())
-    password0 = input("\t\t\b\bPlease enter a secure password : ")
-    password1 = input("\t\t\b\bPlease reconfirm your password : ")
-    flag = 0
-    if password0!=password1:
-        flag = 1
-        print("\n\n\t\tBoth passwords are not the same !!!\n")
-        log("user didn't type matching passwords")
-        print("\t\tredirecting you to menu again !")
+def staff_registeration(ui_element,privilage_level,staff_type_to_add):
+    cur1.execute("select max(staff_id) from staff_register_list")  #selects the biggest staff id or the last registered staff id from table 
+    data = cur1.fetchall() # just stores the last registered staff id
+    if data[0][0] == None:
+        staff_id = 0 # if no staff id was found meaning the database was just created it sets default to 0
     else:
-        flag = 0
-    return flag,password0,email_address
-# block end
+        staff_id = data[0][0] + 1
 
-# fuction block for staff registeration2
-def staff_registeration2(password,email_address,privilage_level,staff_type):
-    staff_id=0
-    cur1.execute("select max(staff_id) from staff_register_list")
-    tempvar1=cur1.fetchall()
-    staff_id=str(tempvar1[0][0])
-    if staff_id=="None":
-        staff_id="0"
-    else:
-        staff_id=str(int(staff_id)+1)
-    first_name = input("\t\t\b\bPlease enter your first name : ")
-    last_name = input("\t\t\b\bPlease enter your last name : ")
-    age = input("\t\t\b\bPlease enter your age : ")
-    phonenumber = input("\t\t\b\bPlease enter your phone number  : ")
-    adhar_id = input("\t\t\b\bPlease enter your adhar id : ")
-    nationality = input("\t\t\b\bPlease enter your nationality : ")
-    tc = input("\t\t\b\bDo you comply with T&C (y or n) : ")
-    if privilage_level==3 and staff_type=="staff":
+    if privilage_level == "admin" and staff_type_to_add == "staff":
         is_admin="n"
         is_owner="n"
-    elif privilage_level==4 and staff_type=="staff":
+    elif privilage_level == "owner" and staff_type_to_add == "staff":
         is_admin="n"
         is_owner="n"
-    elif privilage_level==4 and staff_type=="admin":
+    elif privilage_level == "owner" and staff_type_to_add == "admin":
         is_admin="y"
         is_owner="n"
-    values=(staff_id,email_address,password,first_name,last_name,age,phonenumber,adhar_id,nationality,tc,is_admin,is_owner)
+
+    data_list_to_collect = ["email_address","password","first name","last name","age","phonenumber","adhar_id","nationality","tc"]
+    print()
+    values_1 = data_catching(data_list_to_collect,ui_element)  #this function will catch all the data here
+    values_1.insert(0,staff_id)
+    values_1.append(is_admin)
+    values_1.append(is_owner)
+    values_2 = (values_1[0],values_1[1],values_1[6],values_1[2],is_admin,is_owner)
+
     try:
-        cur1.execute("insert into staff_register_list(staff_id,email_address,password,first_name,last_name,age,phonenumber,adhar_id,nationality,tc,is_admin,is_owner)values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",values)
-        values=(staff_id,email_address,phonenumber,password,is_admin,is_owner)
-        cur1.execute("insert into staff_checklist(staff_id,email_adress,phonenumber,password,is_admin,is_owner)values(%s,%s,%s,%s,%s,%s)",values)
-        print("\n\tsuccesfully registered !\n")
-        print("\n\tyour staff id is :",staff_id)
-        print("\tplease remember your staff_id and password")
-        log("a staff was registered !")
-#    except s.errors.DataError:
-#        print("\n\n\t#### Error : Please enter appropriate values above ####".upper())
-#        log("user entered inappropriate value")
+        cur1.execute("insert into staff_register_list(staff_id,email_address,password,first_name,last_name,age,phonenumber,adhar_id,nationality,tc,is_admin,is_owner)values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",values_1)
+        cur1.execute("insert into staff_checklist(staff_id,email_address,phonenumber,password,is_admin,is_owner)values(%s,%s,%s,%s,%s,%s)",values_2)
+        box("!!! succesfully registered !!!\n \nPlease remember your User ID and password !\nYour User is : " + str(staff_id) +"\nYour password is : " + values_2[3],escape_sequences = ui_element, error_box = True )
+        log("a staff was registered with staff id : " + str(staff_id))
+        con1.commit()
     except s.errors.IntegrityError:
-        print("\n\n\t#### Error : Please enter your own email, phonenumber, adhar ID and check for its correctness ####")
-        log("user entred wrong email,phonenumber etc")
-    con1.commit()
-# block end
+        box("Registration failed !\nPlease enter your own email, phonenumber, adhar ID and check for its correctness",escape_sequences = ui_element, warning_box = True)
+        log("registraion failed, staff entred wrong email,phonenumber etc")
+
 
 #function block for staff login
 def staff_login(ui_element):
@@ -284,47 +277,106 @@ def login(ui_element):
     return "login_failed",None
 #end block
 
+#function for database console 
+def database_console(ui_element,console_user):
+    if console_user == "admin":
+        console_con = con1
+        console_cur = cur1
+    if console_user == "owner":
+        console_con = con1
+        console_cur = cur1
+    box("Please use console with atmost care !\n \nElse things can get corrupted !\n \nPlease enter queries without ';'", escape_sequences = ui_element, error_box = True)
+    while True:
+        box("1.Pure Querie\n2.Querie With Value Fetching\n3.Exit Console", escape_sequences = ui_element, menu = True)
+        opt = data_catching(["option",],ui_element,option_range = (1,3))
+        if opt == 1:
+            querie = input("\n" + ui_element + "Please enter querie : ")
+            try:
+                console_cur.execute(querie)
+                console_con.commit()
+                print("\n" + ui_element + "Querie executed successfully !")
+            except Exception:
+                box("Querie Errored Out !!!", escape_sequences = ui_element, warning_box = True)
+        if opt == 2:
+            querie = input("\n" + ui_element + "Please enter querie : ")
+            try:
+                console_cur.execute(querie)
+                data = console_cur.fetchall()
+                print("\n" + ui_element + "Querie executed successfully !")
+                print("\n" + ui_element + "Results : ")
+
+                if data == []:
+                    box("There is no result to show", escape_sequences = ui_element, warning_box = True)
+                elif data == [()]:
+                    box("There is no result to show", escape_sequences = ui_element, warning_box = True)
+                else:
+                    box(data, escape_sequences = ui_element)
+            except Exception:
+                box("Querie Errored Out !!!", escape_sequences = ui_element, warning_box = True)
+        if opt == 3:
+            return None
+
+
 #fucntion block for staff removal
-def remove_staff(privilage_level,staff_type):
-    tempvar=int(input("\n\t\tplease enter staff id of staff you want to delete : "))
-    staff_id=(tempvar,)
-    choice_confirmation=input("\n\t\tAre you sure you want to continue : ")
-    if choice_confirmation!="y":
-        return
-    if privilage_level==4 and staff_type=="admin":
-        cur1.execute("select is_owner from staff_checklist where staff_id=%s",staff_id)      
-        authority_check=cur1.fetchall()
-        if authority_check[0][0]=="y":
-            print("\n\t\tyou dont have permission to remove yourself")
-            return
-        cur1.execute("select is_admin from staff_checklist where staff_id=%s",staff_id)
-        authority_check=cur1.fetchall()
-        if authority_check[0][0]=="y" and staff_type=="staff":
-            print("\n\t\tThis part of menu is meant to remove admins\nplease use staff removal part of menu")
-            return
-        if authority_check[0][0]=="n" and staff_type=="admin":
-            print("\n\t\tThis part of menu is meant to remove normal staffs\nplease use admin removal part of menu")
-            return
-        cur1.execute("delete from staff_checklist where staff_id=%s",staff_id)
-        cur1.execute("delete from staff_register_list where staff_id=%s",staff_id)
-        con1.commit()
-    else:
-        cur1.execute("select is_owner from staff_checklist where staff_id=%s",staff_id)
-        authority_check=cur1.fetchall()
-        if authority_check[0][0]=="y":
-            print("\n\t\tyou dont have permission to remove owner")
-            return
-        cur1.execute("select is_owner from staff_checklist where staff_id=%s",staff_id)
-        authority_check=cur1.fetchall()
-        if authority_check[0][0]=="y":
-            print("\n\t\tyou dont have permission to remove another admin")
-            return
+def remove_staff(ui_element,privilage_level,staff_type_to_remove):
+
+    def authority_checker(staff_feild_name):
+        cur1.execute("select " + staff_feild_name + " from staff_checklist where staff_id=%s",(staff_id,))
         try:
-            cur1.execute("delete from staff_checklist where staff_id=%s",staff_id)
-            cur1.execute("delete from staff_register_list where staff_id=%s",staff_id)
-            con1.commit()
-        except ZeroDivisionError:
-            print("\n\t\tunkwon error in staff removal")
+            authority_check = cur1.fetchall()[0][0]
+            return authority_check
+        except Exception as err:
+            print(err)
+            box("Staff with that staff ID does not exist !", escape_sequences = ui_element, warning_box = True)
+            return None
+
+    staff_id = data_catching(["number",],ui_element,custom_message = "Please enter the staff id of staff which you want to delete : ")
+    choice_confirmation = data_catching(["yes or no",],ui_element,custom_message = "Do you want to continue (y/n) : ")
+
+    if choice_confirmation in ["n","N",None]:
+        return None
+
+    elif privilage_level == "owner" and staff_type_to_remove == "admin" or staff_type_to_remove == "staff":
+        authority_check = authority_checker("is_owner")
+        if authority_check == None: #just goes back if staff with that id didnt exist 
+            return None
+        if authority_check == "y":  #this would mean owner was trying to reomve himself
+            box("you dont have permission to remove yourself !", escape_sequences = ui_element, warning_box = True)
+            return None
+        authority_check = authority_checker("is_admin")
+        if authority_check == None: #just goes back if staff with that id didnt exist
+            return None
+        if authority_check == "n" and staff_type_to_remove == "admin":    #this would mean owner tried to remove staff with admin removal feature
+            box("This feature is for only removal of admins !\nPlease use staff removal feature for that", escape_sequences = ui_element, warning_box = True)
+            return None
+        if authority_check == "y" and staff_type_to_remove == "staff":    #this would mean owner tried to use staff removal feature for admin removal 
+            box("This part of menu is meant to remove normal staffs\nPlease use admin removal part of menu", escape_sequences = ui_element, warning_box = True)
+            return None
+        #if it passed all cretierieas and error checks staff is deleted
+        cur1.execute("delete from staff_checklist where staff_id=%s",(staff_id,))
+        cur1.execute("delete from staff_register_list where staff_id=%s",(staff_id,))
+        con1.commit()
+        log(staff_type_to_remove + " with staff ID, " + str(staff_id) + " was removed by owner")
+        print("\n" + ui_element + staff_type_to_remove + " with staff ID, " + str(staff_id) + " was removed successfully !")
+    elif privilage_level == "admin" and staff_type_to_remove == "staff":
+        authority_check = authority_checker("is_owner")
+        if authority_check == None: #just goes back if staff with that id didnt exist
+            return None
+        if authority_check == "y":
+            box("you dont have permission to remove owner !", escape_sequences = ui_element, warning_box = True)
+            return None
+        authority_check = authority_checker("is_admin")
+        if authority_check == None: #just goes back if staff with that id didnt exist
+            return None
+        if authority_check == "y":
+            box("you dont have permission to remove another admin or yourself !", escape_sequences = ui_element, warning_box = True)
+            return None
+        #if it passed all cretierieas and error checks staff is deleted
+        cur1.execute("delete from staff_checklist where staff_id=%s",(staff_id,))
+        cur1.execute("delete from staff_register_list where staff_id=%s",(staff_id,))
+        con1.commit()
+        log(staff_type_to_remove + " with staff ID, " + str(staff_id) + " was removed by owner")
+        print("\n" + ui_element + staff_type_to_remove + " with staff ID, " + str(staff_id) + " was removed successfully !")
 #block end 
 
 #function block for booking ticket
@@ -629,7 +681,7 @@ def book_food(user_id, ui_element):
 #block end
 
 #function block for checking of emails and passwords as such since i dont wanna repeat it nor huge pain reading stuff 
-def data_catching(typelist,ui_element,option_range = None,usecase = None):
+def data_catching(typelist,ui_element,option_range = None,custom_message= "None",usecase = None):
     
     data_list = []      #we add data to return in the end to its
                         #if all went fine the data will be returned as list containing everything requested
@@ -894,10 +946,13 @@ def data_catching(typelist,ui_element,option_range = None,usecase = None):
             if all_tries_failed == True:
                 return None
 
-        elif type == "ticket id":
+        elif type == "ticket id" or type == "number":
             for i in range(3):
                 number_is_valid = True
-                number = input(ui_element + "Please enter you age : ")
+                if type == "ticket id":
+                    number = input(ui_element + "Please enter your ticket id : ")
+                else:
+                    number = input(ui_element + custom_message)
                 if number.isdigit() == False:
                     box(type + " should not have any charecters than number",escape_sequences = ui_element,warning_box = True)
                     number_is_valid = False
@@ -911,13 +966,16 @@ def data_catching(typelist,ui_element,option_range = None,usecase = None):
             if all_tries_failed == True:
                 return None
 
-        elif type == "tc":
+        elif type == "tc" or type == "yes or no":
             for i in range(3):
-                tc = input(ui_element + "Do you agree to Terms and Conditions (y/n) : ")
-                if tc not in ["y","n","Y","N"]:
+                if type == "tc":
+                    y_or_n = input(ui_element + "Do you agree to Terms and Conditions (y/n) : ")
+                else:
+                    y_or_n = input(ui_element + custom_message)
+                if y_or_n not in ["y","n","Y","N"]:
                     box("The answer cannot be anything other than y,n,Y,N",escape_sequences = ui_element,warning_box = True)
                 else:
-                    data_list.append(tc)
+                    data_list.append(y_or_n)
                     all_tries_failed = False
                     break
             if all_tries_failed == True:
@@ -1183,9 +1241,9 @@ print("\n")
 print("               __-------___")
 print("             _(            )__----- _")
 print("            (  --Developed by        )")             # just an ASCII art for looks
-print("             (___                     )_")
-print("                 (___                   )")
-print("                     (__                ) ")
+print("             (___    foxpupfr         )_")
+print("                 (___       on          )")
+print("                     (__       github    ) ")
 print("                         (__      _   _  ) \t\t#-----------------------------------------------#")
 print("                            (    ) (  )(  )\t\t|                                               |")
 print("                            (   )   ( ) ( )\t\t|      WELCOME TO SHIP MANANGEMENT SOFTWARE     |")
@@ -1200,6 +1258,7 @@ print(r"""                    \.............................../""")     #this is
 print("               hjw_,~')_,~')_,~')_,~')_,~')_,~')_,~')/,~')_")
 
 
+#all of these are just menus made into functions
 def login_menu():
     ui_element = "\t"
     log("user entred login menu")
@@ -1222,7 +1281,7 @@ def login_menu():
 
 def customer_menu(user_id):
     ui_element = "\t\t"
-    log("customer with user ID " + user_id + " entered customer menu")
+    log("customer with user ID " +str(user_id) + " entered customer menu")
     box("1.Book tickets\n2.See Tickets\n3.Prebooking\n4.Food Booking\n5.Go Back to main menu", escape_sequences = ui_element, menu = True)
     opt = data_catching(["option",], ui_element, option_range = (1,5))
     if opt == 1:
@@ -1250,68 +1309,90 @@ def staff_menu(login_status):
     if opt == 2:
         update_ticket(ui_element,user_type = "staff",update_type ="refund")   
     if opt == 3:
-        see_info(ui_element,"ship info-current")
+        see_info(ui_element,"ship info-currenta")
     if opt == 4:
         see_info(ui_element,"ship info-prebooking")
     if opt == 5:
         see_info(ui_element,"ship history")
     if opt == 6:
         see_info(ui_element,"ticket history")
-    if login_status == "logged_in-admin" and opt == 7:
+    while login_status == "logged_in-admin" and opt == 7:
         box("--- Admin Menu ---\n \n1.Add Staff\n2.Remove Staff\n3.Use Databse Console With Admin Privilages\n4.Go Back",escape_sequences = ui_element, menu = True)
         sub_menu_opt = data_catching(["option",], ui_element, option_range = (1,4))
-    if login_status == "logged_in-owner" and opt == 7:
+        if sub_menu_opt == 1:
+            staff_registeration(ui_element,privilage_level = "admin",staff_type_to_add = "staff")
+        if sub_menu_opt == 2:
+            remove_staff(ui_element, privilage_level = "admin", staff_type_to_remove = "staff")
+        if sub_menu_opt == 3:
+            database_console(ui_element,"admin")
+        if sub_menu_opt == 4:
+            break
+    while login_status == "logged_in-owner" and opt == 7:
         box("--- Owner Menu ---\n \n1.Add Staff\n2.Remove Staff\n3.Add Admin\n4.Remove Admin\n5.Use Databse Console With Admin Privilages\n6.Go Back",escape_sequences = ui_element, menu = True)
         sub_menu_opt = data_catching(["option",], ui_element, option_range = (1,6))
-    if opt == 8:
-        pass
-    
-while con1.is_connected() == True:   # This puts program into loop untill user quits
-    log("user entered the main program")   
-    print("\n\nPlease log in or register ( chose options 1, 2, 3 ) :")
-    box("1.log in\n2.register ( If you don't have an account already )\n3.exit program",menu = True)
-    try:
-        opt=input("\nPlease enter 1, 2, 3 : ") #opt will be used for main menu options
-        if opt not in ["1","2","3"]:
-            box("Please enter an appropriate option", warning_box = True)
-#end of main menu
-
-
-        #login menu 
-        while opt == "1":
-            login_status, user_id = login_menu()
-            if login_status == "exit":
-                break
-            while login_status == "logged_in-user":
-                exit_status = customer_menu(user_id)
-                if exit_status == "exit":
-                    break
-            while login_status in ["logged_in-staff","logged_in-admin","logged_in-owner"]:
-                staff_menu(login_status)
-
-        #registeration option 
-        while opt == "2":
-            log("user choose registeration option")
-            print("\n\t1.register")
-            print("\t2.go back to main menu")
-            opt2 = int(input("\n\tPlease enter 1, 2 : "))
-            while opt2 == 1:
-                log("user entered registeration option further")
-                user_reg_check=user_registeration()
-            if opt2 == 2:
-                log("user exited registeration menu")
-                break
-            if opt2 not in [1,2]: 
-                print("\n\n\t#### Error : Please enter appropriate values above ####".upper())
-                log("user entered inappropriate option in register menu")
-        if opt =="3":
-            log("user exited program")
+        if sub_menu_opt == 1:
+            staff_registeration(ui_element,privilage_level = "owner",staff_type_to_add = "staff")
+        if sub_menu_opt == 2:
+            remove_staff(ui_element, privilage_level = "owner", staff_type_to_remove = "staff")
+        if sub_menu_opt == 3:
+            staff_registeration(ui_element,privilage_level = "owner",staff_type_to_add = "admin")
+        if sub_menu_opt == 4:
+            remove_staff(ui_element, privilage_level = "owner", staff_type_to_remove = "admin")
+        if sub_menu_opt == 5:
+            database_console(ui_element,"owner")
+        if sub_menu_opt == 6:
             break
-        #end of registeration option 
+    if opt == 8:
+        return "exit"
+#all menu functions end here    
+
+while con1.is_connected() == True:   # This puts program into loop untill user quits
+    ui_element = " "
+    log("user entered the main program")   
+    print("\n\n" + ui_element  + "Please log in or register ( chose options 1, 2, 3 ) :")
+    box("1.log in\n2.register ( If you don't have an account already )\n3.exit program",escape_sequences = ui_element,menu = True)
+    
+    opt=input("\n" + ui_element + "Please enter 1, 2, 3 : ") #opt will be used for main menu options
+    if opt not in ["1","2","3"]:
+        box("Please enter an appropriate option", escape_sequences = ui_element, warning_box = True)
+
+        #login menu and sub menus
+    while opt == "1":
+        login_status, user_id = login_menu()
+        if login_status == "exit":
+            break
+        while login_status == "logged_in-user":
+            exit_status = customer_menu(user_id)
+            if exit_status == "exit":
+                break
+        while login_status in ["logged_in-staff","logged_in-admin","logged_in-owner"]:
+            exit_status = staff_menu(login_status)
+            if exit_status == "exit":
+                break
+        #login menu and sub menus end    
+        
+
+        #registeration menu 
+    while opt == "2":
+        log("user choose registeration option")
+        ui_element = "\t"
+        box("1.Register\n2.Go Back To Main Menu",escape_sequences = ui_element, menu = True)
+        opt_0 = data_catching(["option",], ui_element, option_range = (1,2))
+        if opt_0 == 1:
+            log("user entered registeration option further")
+            user_reg_check = user_registeration(ui_element)
+        if opt_0 == 2:
+            log("user exited registeration menu")
+            break
+        if opt_0 == None: 
+            log("user entered inappropriate option in register menu")
+        #registeration menu end
+        
+        #program exit
+    if opt =="3":
+        log("user exited program")
+        break
 
 
-    except ZeroDivisionError:
-        print("\n\n\t#### Unkwon error please submit code for through inspection ####".upper())
-        log("user entered inappropriate option in register menu")
 
 

@@ -13,6 +13,7 @@
 log.txt
 error_log.txt
 refrence_data.txt
+shipproject_intialized.txt
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
