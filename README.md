@@ -7,6 +7,7 @@ A CLI application to manage things for a imaginary ship transport company ( Scho
 - It mainly operates on `mysql.connector` which is an extrenal module
 
 ## Setup
+- This project requires a running MySQL server (not just the `mysql.connector` Python module)
 - Make sure you have `mysql.connector` and `python3` installed
 - On Arch Linux or Arch based distros
 
