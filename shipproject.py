@@ -1,4 +1,4 @@
-# Please read the commends carefully to understand the program 
+# Please read the commends carefully to understand the program
 
 #imports 
 try: # Tries to import all the modules needed 
@@ -16,8 +16,6 @@ except Exception as err:
 
 # function blocks for easy management
 
-# function block for first run of program (fully hardcoded block)
- #most values here are hardcoded as to show examples and as such 
 def first_run(ui_element = " "):
     log("#### program shipproject.py was started ####",escape_sequences="\n\n\n\n\n")
     def run_querie(*command):   #for error checking and handling also logs into the log.txt if the table exits 
@@ -1237,26 +1235,6 @@ if module_error_flag==True: #logs import errors if any
 first_run() # Routes you back to the intialization run of the program in theroy this function runs first 
 
 #main menu
-print("\n")
-print("               __-------___")
-print("             _(            )__----- _")
-print("            (  --Developed by        )")             # just an ASCII art for looks
-print("             (___    foxpupfr         )_")
-print("                 (___       on          )")
-print("                     (__       github    ) ")
-print("                         (__      _   _  ) \t\t#-----------------------------------------------#")
-print("                            (    ) (  )(  )\t\t|                                               |")
-print("                            (   )   ( ) ( )\t\t|      WELCOME TO SHIP MANANGEMENT SOFTWARE     |")
-print("                             ( )  ()( ) ( )\t\t|                                               |")
-print("                             __    __    __\t\t#-----------------------------------------------#")
-print("                            |==|  |==|  |==|")
-print("                          __|__|__|__|__|__|__")
-print("                        __|___________________|___")     # I copied that table from my own box funtion
-print("                     __|__[]__[]__[]__[]__[]__[]__|___")
-print("                    |............................o.../")
-print(r"""                    \.............................../""")     #this is a raw string if you are wondering
-print("               hjw_,~')_,~')_,~')_,~')_,~')_,~')_,~')/,~')_")
-
 
 #all of these are just menus made into functions
 def login_menu():
@@ -1346,7 +1324,28 @@ def staff_menu(login_status):
         return "exit"
 #all menu functions end here    
 
-while con1.is_connected() == True:   # This puts program into loop untill user quits
+while con1.is_connected() == True and module_error_flag == False:   # This puts program into loop untill user quits
+    
+    print("\n")
+    print("               __-------___")
+    print("             _(            )__----- _")
+    print("            (  --Developed by        )")             # just an ASCII art for looks
+    print("             (___    foxpupfr         )_")
+    print("                 (___       on          )")
+    print("                     (__       github    ) ")
+    print("                         (__      _   _  ) \t\t#-----------------------------------------------#")
+    print("                            (    ) (  )(  )\t\t|                                               |")
+    print("                            (   )   ( ) ( )\t\t|      WELCOME TO SHIP MANANGEMENT SOFTWARE     |")
+    print("                             ( )  ()( ) ( )\t\t|                                               |")
+    print("                             __    __    __\t\t#-----------------------------------------------#")
+    print("                            |==|  |==|  |==|")
+    print("                          __|__|__|__|__|__|__")
+    print("                        __|___________________|___")     # I copied that table from my own box funtion
+    print("                     __|__[]__[]__[]__[]__[]__[]__|___")
+    print("                    |............................o.../")
+    print(r"""                    \.............................../""")     #this is a raw string if you are wondering
+    print("               hjw_,~')_,~')_,~')_,~')_,~')_,~')_,~')/,~')_")
+
     ui_element = " "
     log("user entered the main program")   
     print("\n\n" + ui_element  + "Please log in or register ( chose options 1, 2, 3 ) :")
