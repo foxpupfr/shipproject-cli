@@ -1,4 +1,4 @@
-# Please read the commends carefully to understand the program
+#read the commends carefully to understand the program
 
 #imports 
 try: # Tries to import all the modules needed 
@@ -149,6 +149,8 @@ def user_registeration(ui_element):
     data_list_to_collect = ["email_address","password","first name","last name","age","phonenumber","adhar_id","nationality","tc"]
     print()
     values_1 = data_catching(data_list_to_collect,ui_element)  #this function will catch all the data here
+    if values_1 == None :
+        return None
     values_1.insert(0,user_id)
     values_2 = (values_1[0],values_1[1],values_1[6],values_1[2])
 
@@ -185,6 +187,8 @@ def staff_registeration(ui_element,privilage_level,staff_type_to_add):
     data_list_to_collect = ["email_address","password","first name","last name","age","phonenumber","adhar_id","nationality","tc"]
     print()
     values_1 = data_catching(data_list_to_collect,ui_element)  #this function will catch all the data here
+    if values_1 == None :
+        return None
     values_1.insert(0,staff_id)
     values_1.append(is_admin)
     values_1.append(is_owner)
@@ -334,7 +338,7 @@ def remove_staff(ui_element,privilage_level,staff_type_to_remove):
     if choice_confirmation in ["n","N",None]:
         return None
 
-    elif privilage_level == "owner" and staff_type_to_remove == "admin" or staff_type_to_remove == "staff":
+    elif privilage_level == "owner" and (staff_type_to_remove == "admin" or staff_type_to_remove == "staff"):
         authority_check = authority_checker("is_owner")
         if authority_check == None: #just goes back if staff with that id didnt exist 
             return None
@@ -930,6 +934,7 @@ def data_catching(typelist,ui_element,option_range = None,custom_message= "None"
                 age = input(ui_element + "Please enter you age : ")
                 if age.isdigit() == False:
                     box("Age should not have any charecters than number",escape_sequences = ui_element,warning_box = True)
+                    continue
                     age_is_valid = False
                 if int(age) < 0:
                     box("age cannot be less than 0",escape_sequences = ui_element,warning_box = True)
